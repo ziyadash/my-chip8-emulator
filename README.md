@@ -8,17 +8,19 @@ This project is a CHIP-8 emulator written in C. The CHIP-8 is a simple, interpre
 
 - Emulates the CHIP-8 CPU, including all 34 opcodes.
 - Displays graphics in a 64x32 monochrome screen.
-- Handles input from the CHIP-8's original 16-key keypad, using the below keymap:\
-Keypad       Keyboard\
-+-+-+-+-+    +-+-+-+-+\
-|1|2|3|C|    |1|2|3|4|\
-+-+-+-+-+    +-+-+-+-+\
-|4|5|6|D|    |Q|W|E|R|\
-+-+-+-+-+ => +-+-+-+-+\
-|7|8|9|E|    |A|S|D|F|\
-+-+-+-+-+    +-+-+-+-+\
-|A|0|B|F|    |Z|X|C|V|\
-+-+-+-+-+    +-+-+-+-+
+- Handles input from the CHIP-8's original 16-key keypad, using the below keymap:
+   ```bash
+   Keypad       Keyboard
+   +-+-+-+-+    +-+-+-+-+
+   |1|2|3|C|    |1|2|3|4|
+   +-+-+-+-+    +-+-+-+-+
+   |4|5|6|D|    |Q|W|E|R|
+   +-+-+-+-+ => +-+-+-+-+
+   |7|8|9|E|    |A|S|D|F|
+   +-+-+-+-+    +-+-+-+-+
+   |A|0|B|F|    |Z|X|C|V|
+   +-+-+-+-+    +-+-+-+-+
+   ```
 - Implements a basic SDL-based rendering and input system.
 
 ## Prerequisites
@@ -36,15 +38,15 @@ To build and run the emulator, you will need:
    ```bash
    make
    ```
-## Running the emulator
+## Running the Emulator
 To run the emulator, use the following command:
   ```bash
   ./chip8_emulator <Scale> <Delay> <ROM>
 ```
 where:\
-<Scale>: The scale factor for the display window (e.g., 10 for a 640x320 window).\
-<Delay>: The cycle delay in milliseconds, controlling the speed of emulation.\
-<ROM>: The path to the CHIP-8 ROM file you want to load.
+- Scale: The scale factor for the display window (e.g., 10 for a 640x320 window).
+- Delay: The cycle delay in milliseconds, controlling the speed of emulation.
+- ROM: The path to the CHIP-8 ROM file you want to load.
 
 For example,
   ```bash
