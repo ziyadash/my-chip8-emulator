@@ -544,13 +544,16 @@ void emu_cycle(chip8_state *state) {
 
     // Decode and execute the fetched opcode
     execute_opcode(state);
+}
 
-    // Decrement the delay timer if it's been set
+// The delay and sound timers count down at a fixed 60 Hz, independently of
+// how fast the CPU is stepping, so the caller drives this from the main loop
+// rather than it happening once per instruction.
+void update_timers(chip8_state *state) {
     if (state->delay_timer > 0) {
         --state->delay_timer;
     }
 
-    // Decrement the sound timer if it's been set
     if (state->sound_timer > 0) {
         --state->sound_timer;
     }
