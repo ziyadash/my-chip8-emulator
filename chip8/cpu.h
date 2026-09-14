@@ -14,3 +14,6 @@ void execute_opcode(chip8_state *state);
 void initialise_state(chip8_state *state);
 
 void emu_cycle(chip8_state *state);
+
+// decrement the delay and sound timers; call at 60 Hz
+void update_timers(chip8_state *state);
