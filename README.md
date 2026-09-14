@@ -38,6 +38,19 @@ To build and run the emulator, you will need:
    ```bash
    make
    ```
+## Testing
+
+The regression suites cover the sprite renderer, the timers, and ROM loading.
+They exercise `cpu.c`, `font.c` and `loadROM.c`, none of which touch SDL, so
+they build and run without a display:
+
+```bash
+make test
+```
+
+AddressSanitizer is enabled for these builds, because the framebuffer
+overrun one of the suites covers is exactly the class of bug it detects.
+
 ## Running the Emulator
 To run the emulator, use the following command:
   ```bash

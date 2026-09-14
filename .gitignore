@@ -1,0 +1,9 @@
+# Build output
+*.o
+chip8/chip8_emulator
+
+# Test binaries and the fixtures they create
+chip8/tests/test_*
+!chip8/tests/test_*.c
+!chip8/tests/test_helpers.h
+chip8/*.ch8
