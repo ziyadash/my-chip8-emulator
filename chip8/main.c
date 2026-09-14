@@ -39,7 +39,10 @@ int main(int argc, char **argv) {
     // Initialise Chip-8 state
     chip8_state state;
     initialise_state(&state);
-    loadROM(rom_file_name, &state);
+
+    if (loadROM(rom_file_name, &state) != 0) {
+        return EXIT_FAILURE;
+    }
 
     // Initialise SDL for rendering
     RenderContext renderCtx;

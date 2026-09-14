@@ -1,48 +1,78 @@
 #include "loadROM.h"
+
+#include <errno.h>
 #include <string.h>
 
-void loadROM(char *fileName, chip8_state *state) {
-    // get filepath
-    char filePath[256];
-    snprintf(filePath, sizeof(filePath), "./ROMs/%s", fileName);
+// A ROM is loaded at PROGRAM_OFFSET, so anything larger than the space above
+// it cannot be stored without running off the end of state->memory.
+#define MAX_ROM_SIZE (MEMORY_SPACE - PROGRAM_OFFSET)
 
-    // open file as binary
-    FILE *fptr = fopen(filePath, "rb");
-    if (fptr == NULL) {
-        exit(0);
+// Opens fileName as given. If that fails and the name carries no directory
+// component, retries inside ./ROMs, where this repo keeps its bundled ROMs,
+// so that both "tetris.ch8" and a real path work.
+static FILE *open_rom(const char *fileName) {
+    FILE *fptr = fopen(fileName, "rb");
+
+    if (fptr != NULL || strchr(fileName, '/') != NULL) {
+        return fptr;
     }
 
-    // move file pointer to the end, use ftell to get file size
-    fseek(fptr, 0, SEEK_END);
-    int size = ftell(fptr);
-    
-    // allocate buffer to store contents
-    char *buffer = malloc(size);
-    if (buffer == NULL) {
-        fclose(fptr);
-        exit(0);
+    char filePath[512];
+    int written = snprintf(filePath, sizeof(filePath), "./ROMs/%s", fileName);
+    if (written < 0 || (size_t)written >= sizeof(filePath)) {
+        return NULL;
     }
 
-    // move file pointer back to start, load rom contents into state->memory
-    fseek(fptr, 0, SEEK_SET);
-    fread(buffer, 1, size, fptr);
-    memcpy(state->memory + PROGRAM_OFFSET, buffer, size);
-
-    // clean up
-    free(buffer);
-    fclose(fptr);
-
-    return;
+    return fopen(filePath, "rb");
 }
 
-// void loadROM(const char *filename, chip8_state *state) {
-//     FILE *rom = fopen(filename, "rb");
-//     if (!rom) {
-//         fprintf(stderr, "Failed to open ROM: %s\n", filename);
-//         return -1;
-//     }
+int loadROM(const char *fileName, chip8_state *state) {
+    FILE *fptr = open_rom(fileName);
+    if (fptr == NULL) {
+        fprintf(stderr, "Could not open ROM '%s': %s\n", fileName, strerror(errno));
+        return -1;
+    }
 
-//     fread(state->memory + PROGRAM_OFFSET, 1, MEMORY_SPACE - PROGRAM_OFFSET, rom);
-//     fclose(rom);
-//     return 0;
-// }
+    // Measure the file up front so an oversized ROM is refused rather than
+    // written past the end of state->memory
+    if (fseek(fptr, 0, SEEK_END) != 0) {
+        fprintf(stderr, "Could not seek in ROM '%s': %s\n", fileName, strerror(errno));
+        fclose(fptr);
+        return -1;
+    }
+
+    long size = ftell(fptr);
+    if (size < 0) {
+        fprintf(stderr, "Could not size ROM '%s': %s\n", fileName, strerror(errno));
+        fclose(fptr);
+        return -1;
+    }
+
+    if (size == 0) {
+        fprintf(stderr, "ROM '%s' is empty\n", fileName);
+        fclose(fptr);
+        return -1;
+    }
+
+    if (size > MAX_ROM_SIZE) {
+        fprintf(stderr, "ROM '%s' is %ld bytes; only %d bytes are available from 0x%03X\n",
+                fileName, size, MAX_ROM_SIZE, PROGRAM_OFFSET);
+        fclose(fptr);
+        return -1;
+    }
+
+    rewind(fptr);
+
+    // Read straight into the program region; the previous intermediate
+    // malloc'd buffer bought nothing and added a failure path of its own
+    size_t bytes_read = fread(state->memory + PROGRAM_OFFSET, 1, (size_t)size, fptr);
+    if (bytes_read != (size_t)size) {
+        fprintf(stderr, "Short read on ROM '%s': expected %ld bytes, got %zu\n",
+                fileName, size, bytes_read);
+        fclose(fptr);
+        return -1;
+    }
+
+    fclose(fptr);
+    return 0;
+}
