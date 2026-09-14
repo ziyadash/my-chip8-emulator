@@ -30,13 +30,38 @@ $(TARGET): $(OBJ)
 %.o: %.c
 	$(CC) $(CFLAGS) $(INCLUDE) -c $< -o $@
 
+# ---------------------------------------------------------------------------
+# Tests
+# ---------------------------------------------------------------------------
+# The suites exercise cpu.c, font.c and loadROM.c, none of which touch SDL, so
+# they build and run without a display. AddressSanitizer is on because the
+# out-of-bounds framebuffer write these tests cover is exactly what it catches.
+
+TEST_DIR   = tests
+TEST_SRC   = $(wildcard $(TEST_DIR)/test_*.c)
+TEST_BINS  = $(TEST_SRC:.c=)
+TEST_DEPS  = cpu.c font.c loadROM.c
+TEST_FLAGS = -Wall -Wextra -g -O1 -fsanitize=address
+
+$(TEST_DIR)/%: $(TEST_DIR)/%.c $(TEST_DEPS)
+	$(CC) $(TEST_FLAGS) $(INCLUDE) $< $(TEST_DEPS) -o $@
+
+test: $(TEST_BINS)
+	@fail=0; \
+	for t in $(TEST_BINS); do \
+		echo "=== $$t"; \
+		./$$t || fail=1; \
+	done; \
+	if [ $$fail -ne 0 ]; then echo "TESTS FAILED"; exit 1; fi; \
+	echo "All test suites passed."
+
 # Clean Up
 clean:
-	rm -f $(OBJ) $(TARGET)
+	rm -f $(OBJ) $(TARGET) $(TEST_BINS)
 
 # Run the emulator (adjust as necessary)
 run: $(TARGET)
 	./$(TARGET) $(SCALE) $(DELAY) $(ROM)
 
 # Phony Targets
-.PHONY: all clean run
+.PHONY: all clean run test
