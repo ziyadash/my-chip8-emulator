@@ -1,3 +1,5 @@
+#include <string.h>
+
 #include "font.h"
 /*
 11110000
