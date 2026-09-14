@@ -34,8 +34,8 @@ then increment PC by 2.
 #define MEMORY_SPACE 4096
 #define NUM_V_REG 16
 #define STACK_DEPTH 16
-#define VIDEO_ROWS 64
-#define VIDEO_COLS 32
+#define VIDEO_WIDTH 64
+#define VIDEO_HEIGHT 32
 #define NUM_KEYS 16
 #define FONT_OFFSET 0x50
 #define PROGRAM_OFFSET 0x200
@@ -53,7 +53,7 @@ struct chip8_state {
     uint8_t stack_pointer;
     uint8_t delay_timer;
     uint8_t sound_timer;
-    uint32_t video[VIDEO_ROWS * VIDEO_COLS]; // use a 32 bit int to make using SDL easier
+    uint32_t video[VIDEO_WIDTH * VIDEO_HEIGHT]; // use a 32 bit int to make using SDL easier
     uint8_t keys[NUM_KEYS];
     uint32_t opcode; // an instruction
 };

@@ -10,9 +10,6 @@
 #include "cpu.h"
 #include "render_screen.h"
 
-#define VIDEO_WIDTH 64
-#define VIDEO_HEIGHT 32
-
 int main(int argc, char **argv) {
     if (argc != 4) {
         fprintf(stderr, "Usage: %s <Scale> <Delay> <ROM>\n", argv[0]);
