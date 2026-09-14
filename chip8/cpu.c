@@ -6,6 +6,10 @@ void initialise_state(chip8_state* state)
 	memset(state, 0, sizeof(chip8_state));
 	state->program_counter = PROGRAM_OFFSET;
 	load_font(state);
+
+	// seed the RNG once for the lifetime of the emulator; seeding inside
+	// op_Cxkk made every call within the same second return the same byte
+	srand(time(NULL));
 }
 
 // Unique opcodes
@@ -99,7 +103,7 @@ void op_Cxkk(chip8_state *state) {
     uint8_t kk = state->opcode & 0x00FF;
     
     // generate random number, make sure it fits in 8 bits
-    srand(time(NULL));
+    // the RNG is seeded once in initialise_state, not here
     uint8_t random_byte = rand() % 256;
 
     state->v_register[vx_index] = random_byte & kk;
@@ -113,8 +117,8 @@ void op_Dxyn(chip8_state *state) {
     uint8_t height = state->opcode & 0x000Fu;
 
     // Wrap xPos and yPos if going beyond screen boundaries
-    uint8_t xPos = state->v_register[Vx] % VIDEO_COLS;
-    uint8_t yPos = state->v_register[Vy] % VIDEO_ROWS;
+    uint8_t xPos = state->v_register[Vx] % VIDEO_WIDTH;
+    uint8_t yPos = state->v_register[Vy] % VIDEO_HEIGHT;
 
     // Initialise collision flag
     state->v_register[0xF] = 0;
@@ -133,7 +137,7 @@ void op_Dxyn(chip8_state *state) {
             uint8_t spritePixel = spriteByte & (0x80u >> col);
 
             // Pointer to the screen pixel
-            uint32_t screenIndex = ((yPos + row) % VIDEO_ROWS) * VIDEO_ROWS + ((xPos + col) % VIDEO_COLS);
+            uint32_t screenIndex = ((yPos + row) % VIDEO_HEIGHT) * VIDEO_WIDTH + ((xPos + col) % VIDEO_WIDTH);
             uint32_t* screenPixel = &state->video[screenIndex];
 
             // If the sprite pixel is on (not zero)
